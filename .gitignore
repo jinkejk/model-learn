@@ -1,0 +1,9 @@
+.vscode/
+.idea/
+.DS_Store
+.venv
+data
+BERT/model
+BERT/modelscope
+BERT/squad2.0
+benchmark_log
