@@ -22,10 +22,12 @@ if __name__ == '__main__':
 
     # 定义训练参数
     train_batch_size = 8
-    num_epochs = 3
+    num_epochs = 10
     learning_rate = 3e-5
 
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('mps' if torch.backends.mps.is_available() else 'cpu')
+    print(f'use device: {device}')
 
     # 将特征转换为PyTorch张量
     all_input_ids = torch.tensor([f.input_ids for f in train_features], dtype=torch.long)

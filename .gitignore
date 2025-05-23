@@ -7,3 +7,5 @@ BERT/model
 BERT/modelscope
 BERT/squad2.0
 benchmark_log
+*.pkl
+*.pt

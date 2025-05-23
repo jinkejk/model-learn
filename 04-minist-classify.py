@@ -54,7 +54,7 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(net.parameters(), lr=0.001)
 
 # 训练模型
-epochs = 30
+epochs = 300
 for epoch in range(epochs):  # 训练10个epochs
     sum_loss = 0.0
     train_correct = 0
@@ -88,7 +88,6 @@ for i, data in enumerate(test_loader):
 
 print('correct:%.03f%%' % (100 * test_correct / len(test_dataset)))
 
-
 """
 自定义dataset
 """
@@ -101,6 +100,7 @@ class TensorDataset(Dataset):
     实现将一组Tensor数据对封装成Tensor数据集
     能够通过index得到数据集的数据，能够通过len，得到数据集大小
     """
+
     def __init__(self, data_tensor, target_tensor):
         self.data_tensor = data_tensor
         self.target_tensor = target_tensor
@@ -110,6 +110,7 @@ class TensorDataset(Dataset):
 
     def __len__(self):
         return self.data_tensor.size(0)
+
 
 # 生成数据
 data_tensor = torch.randn(4, 3)
