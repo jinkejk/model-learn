@@ -1,8 +1,5 @@
 matplotlib
 scikit-learn
-torch
-torchvision
-torchaudio
 requests
 pillow
 imageio
@@ -22,11 +19,11 @@ schedule
 cachelib
 pybind11
 py-cpuinfo
-deepspeed
-git+http://10.10.30.109/tecoap1/application/benchmark-tools.git@40c71b7f4d15551acf13a2bfe560eadb028c47fc
+#deepspeed
 openai
 transformers
 datasets
 modelscope
 addict
 megatron_util
+accelerate
