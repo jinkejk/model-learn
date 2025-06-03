@@ -1,15 +1,12 @@
 import torch
 import time
 
+from accelerate import Accelerator
 
-def test_gpu_tensorcore_cuda_fp16_compute():
-    # 检查 CUDA 是否可用
-    if not torch.cuda.is_available():
-        print("CUDA 不可用，请检查你的环境配置。")
-        return
 
-    # 获取 CUDA 设备
-    device = torch.device("cuda")
+def gpu_tensorcore_cuda_fp16_compute():
+    accelerator = Accelerator()
+    device = accelerator.device
 
     # 定义矩阵大小，可根据显卡性能调整
     matrix_size = 4096
@@ -22,8 +19,13 @@ def test_gpu_tensorcore_cuda_fp16_compute():
     for _ in range(10):
         _ = torch.matmul(matrix_a, matrix_b)
 
-    # 同步 CUDA 设备，确保预热操作完成
-    torch.cuda.synchronize()
+    # 等待所有运算完成, 阻塞CPU线程，直到当前设备上排队的所有CUDA核心完成执行
+    if device.type == 'mps':
+        torch.mps.synchronize()
+    elif device.type == 'cuda':
+        torch.cuda.synchronize()
+    else:
+        torch.cpu.synchronize()
 
     # 记录开始时间
     start_time = time.time()
@@ -34,7 +36,12 @@ def test_gpu_tensorcore_cuda_fp16_compute():
         _ = torch.matmul(matrix_a, matrix_b)
 
     # 同步 CUDA 设备，确保所有计算完成
-    torch.cuda.synchronize()
+    if device.type == 'mps':
+        torch.mps.synchronize()
+    elif device.type == 'cuda':
+        torch.cuda.synchronize()
+    else:
+        torch.cpu.synchronize()
 
     # 记录结束时间
     end_time = time.time()
@@ -57,23 +64,36 @@ def test_gpu_tensorcore_cuda_fp16_compute():
 
 
 def verify_gpu_fp32_tflops(matrix_size=4096, num_runs=100):
+    accelerator = Accelerator()
+    device = accelerator.device
     # 创建两个随机矩阵，数据类型为 torch.float32
-    a = torch.randn(matrix_size, matrix_size, dtype=torch.float32).cuda()
-    b = torch.randn(matrix_size, matrix_size, dtype=torch.float32).cuda()
+    a = torch.randn(matrix_size, matrix_size, dtype=torch.float32).to(device)
+    b = torch.randn(matrix_size, matrix_size, dtype=torch.float32).to(device)
 
     # 进行热身运算，让 GPU 达到稳定状态
     for _ in range(5):
         _ = torch.matmul(a, b)
 
+    if device.type == 'mps':
+        torch.mps.synchronize()
+    elif device.type == 'cuda':
+        torch.cuda.synchronize()
+    else:
+        torch.cpu.synchronize()
+
     # 记录开始时间
     start_time = time.time()
-
     # 进行多次矩阵乘法运算
     for _ in range(num_runs):
         c = torch.matmul(a, b)
 
-    # 等待所有运算完成
-    torch.cuda.synchronize()
+    # 等待所有运算完成, 阻塞CPU线程，直到当前设备上排队的所有CUDA核心完成执行
+    if device.type == 'mps':
+        torch.mps.synchronize()
+    elif device.type == 'cuda':
+        torch.cuda.synchronize()
+    else:
+        torch.cpu.synchronize()
 
     # 记录结束时间
     end_time = time.time()
@@ -89,11 +109,9 @@ def verify_gpu_fp32_tflops(matrix_size=4096, num_runs=100):
 
     # 计算 TFLOPS
     tflops = total_flops / (total_time * 1e12)
-
-    return tflops
+    print(f"显卡FP32 算力: {tflops} TFLOPS")
 
 
 if __name__ == "__main__":
-    # test_gpu_tensorcore_cuda_fp16_compute()
-    tflops = verify_gpu_fp32_tflops()
-    print(f"显卡测试的 FP32 算力: {tflops} TFLOPS")
+    # gpu_tensorcore_cuda_fp16_compute()
+    verify_gpu_fp32_tflops()
